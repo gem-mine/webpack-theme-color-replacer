@@ -1,5 +1,5 @@
-var path = require('path')
 var fs = require('fs')
+var path = require('path')
 var Extractor = require('./Extractor')
 
 /* optimize-chunk-assets 钩子的代码处理 */
@@ -36,35 +36,34 @@ var Extractor = require('./Extractor')
 //css-loader 1:        \n// module\nexports.push([module.i, \"a{   ...... }\\n\", \"\"]);
 //css-loader 2@srcmap:   // Module\nexports.push([module.i, "a{   .....   }\n", "",{"version":3
 
-var Css_Loader_Reg_DEV = /\bn?exports\.push\(\[module\.i, \\?"(.+?\})(?:\\?\\n)?\\?", \\?"\\?"(?:\]\)|,\{)/g;
+var Css_Loader_Reg_DEV = /\bn?exports\.push\(\[module\.i, \\?"(.+?\})(?:\\?\\n)?\\?", \\?"\\?"(?:\]\)|,\{)/g
 
 //css-loader:  n.exports=t("FZ+f")(!1)).push([n.i,"\n.payment-type[data-v-ffb10066] {......}\n",""])
-var Css_Loader_Reg_UGLY = /\.push\(\[\w+\.i,['"](.+?\})[\\rn]*['"],['"]['"](?:\]\)|,\{)/g;
+var Css_Loader_Reg_UGLY = /\.push\(\[\w+\.i,['"](.+?\})[\\rn]*['"],['"]['"](?:\]\)|,\{)/g
 
 module.exports = function AssetsExtractor(options) {
     this.extractor = new Extractor(options)
-    this.extractAssets = function (assets) {
-        var cssSrcs = [];
+    this.extractAssets = function(assets) {
+        var cssSrcs = []
         Object.keys(assets).map(fn => {
             var items = this.extractAsset(fn, assets[fn])
             cssSrcs = cssSrcs.concat(items)
-        });
-        return cssSrcs;
+        })
+        return cssSrcs
     }
-    this.extractAsset = function (fn, asset) {
+    this.extractAsset = function(fn, asset) {
         if (fn.match(/\.css$/i)) {
-            var src = assetToStr(asset);
+            var src = assetToStr(asset)
             writeFileForDebugIf(fn, src, this.extractor)
-            return this.extractor.extractColors(src);
-        }
-        else if (fn.match(/\.js$/i)) {
-            src = assetToStr(asset);
+            return this.extractor.extractColors(src)
+        } else if (fn.match(/\.js$/i)) {
+            src = assetToStr(asset)
             writeFileForDebugIf(fn, src, this.extractor)
             var cssSrcs = []
-            var CssCodeReg = options.isJsUgly ? Css_Loader_Reg_UGLY : Css_Loader_Reg_DEV;
+            var CssCodeReg = options.isJsUgly ? Css_Loader_Reg_UGLY : Css_Loader_Reg_DEV
             src.replace(CssCodeReg, (match, $1) => {
-                cssSrcs = cssSrcs.concat(this.extractor.extractColors($1));
-            });
+                cssSrcs = cssSrcs.concat(this.extractor.extractColors($1))
+            })
             return cssSrcs
         }
 
@@ -76,14 +75,12 @@ module.exports = function AssetsExtractor(options) {
                         fs.writeFileSync(path.join(process.cwd(), '_tmp_' + path.basename(fn)), src)
                     }
                 }
-            } catch (e) {
-            }
+            } catch (e) {}
         }
     }
-};
-
-function assetToStr(asset) {
-    var src = asset.source() || '';
-    return src.toString();
 }
 
+function assetToStr(asset) {
+    var src = asset.source() || ''
+    return src.toString()
+}

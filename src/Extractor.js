@@ -2,23 +2,26 @@
 var Reg_Lf_Rem = /\\\\?n|\n|\\\\?r|\/\*[\s\S]+?\*\//g
 
 var SpaceReg = /\s+/g
-var TrimReg = /(^|,)\s+|\s+($)/g; //前空格，逗号后的空格; 后空格
+var TrimReg = /(^|,)\s+|\s+($)/g //前空格，逗号后的空格; 后空格
 
 module.exports = function Extractor(options) {
     var matchColorRegs = options.matchColors // ['#409EFF', '#409eff', '#53a8ff', '#66b1ff', '#79bbff', '#8cc5ff', '#a0cfff', '#b3d8ff', '#c6e2ff', '#d9ecff', '#ecf5ff', '#3a8ee6', '#337ecc']
-        .map(c => new RegExp(c.replace(/,/g, ',\\s*'), 'i')); // 255, 255,3
+        .map(c => new RegExp(c.replace(/,/g, ',\\s*'), 'i')) // 255, 255,3
 
-    this.extractColors = function (src) {
+    this.extractColors = function(src) {
         src = src.replace(Reg_Lf_Rem, '')
         var ret = []
-        var nameStart, nameEnd, cssEnd = -1;
+        var nameStart,
+            nameEnd,
+            cssEnd = -1
         while (true) {
             nameStart = cssEnd + 1
             nameEnd = src.indexOf('{', nameStart)
             cssEnd = findCssEnd(src, nameEnd)
             if (cssEnd > -1 && cssEnd > nameEnd && nameEnd > nameStart) {
                 var cssCode = src.slice(nameEnd + 1, cssEnd)
-                if (cssCode.indexOf('{') > -1) { // @keyframes
+                if (cssCode.indexOf('{') > -1) {
+                    // @keyframes
                     var rules = this.extractColors(cssCode)
                 } else {
                     rules = this.getRules(cssCode)
@@ -33,12 +36,19 @@ module.exports = function Extractor(options) {
                     }
                     // 改变选择器
                     if (options.changeSelector) {
-                        selector = options.changeSelector(selector.split(',').sort().join(','), rules) || selector
+                        selector =
+                            options.changeSelector(
+                                selector
+                                    .split(',')
+                                    .sort()
+                                    .join(','),
+                                rules
+                            ) || selector
                     }
                     ret.push(selector + '{' + rules.join(';') + '}')
                 }
             } else {
-                break;
+                break
             }
         }
         return ret
@@ -52,8 +62,7 @@ module.exports = function Extractor(options) {
                 var char = src[cssEnd]
                 if (!char) {
                     return -1
-                }
-                else if (char === '{') {
+                } else if (char === '{') {
                     level++
                 } else if (char === '}') {
                     level--
@@ -65,7 +74,7 @@ module.exports = function Extractor(options) {
             return cssEnd
         }
     }
-    this.getRules = function (cssCode) {
+    this.getRules = function(cssCode) {
         var rules = cssCode.split(';')
         var ret = []
         rules.forEach(rule => {
@@ -76,7 +85,7 @@ module.exports = function Extractor(options) {
         return ret
     }
 
-    this.testCssCode = function (cssCode) {
+    this.testCssCode = function(cssCode) {
         for (var colorReg of matchColorRegs) {
             if (colorReg.test(cssCode)) return true
         }
