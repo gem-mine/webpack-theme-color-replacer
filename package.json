@@ -35,6 +35,7 @@
   "license": "MIT",
   "readme": "readme.md",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "access": "public",
+    "registry": "http://registry.npmjs.org"
   }
 }
